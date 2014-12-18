@@ -5,13 +5,49 @@ USING_NS_CC;
 Scene* HelloWorld::createScene()
 {
     // 'scene' is an autorelease object
-    auto scene = Scene::create();
+    auto scene = Scene::createWithPhysics();
     
     // 'layer' is an autorelease object
     auto layer = HelloWorld::create();
 
     // add layer as a child to scene
     scene->addChild(layer);
+    
+    // win size
+    Size winSize = Director::getInstance()->getWinSize();
+    
+    // add gravity
+    PhysicsWorld* world = scene->getPhysicsWorld();
+    Vect gravity;
+    gravity.setPoint(0, -150);
+    world->setGravity(gravity);
+    
+    // background
+    Sprite* background = Sprite::create("background2.png");
+    float backgroundScale = winSize.height/background->getContentSize().height * 1.01;
+    background->setScale(backgroundScale);
+    background->setAnchorPoint(Vec2(0, 0));
+    //background->setPosition(Point(winSize.width / 2 , floor->getContentSize().height / 2));
+    layer->addChild(background);
+    
+    // ground
+    Rect rect = Rect(0, 0, winSize.width, 20);
+    auto ground = Sprite::create();
+    ground->setTextureRect(rect);
+    ground->setColor(Color3B::WHITE);
+    ground->setPosition(Vec2(ground->getContentSize().width/2, ground->getContentSize().height/2));
+    PhysicsBody* groundPb = PhysicsBody::createBox(ground->getContentSize());
+    groundPb->setDynamic(false);
+    ground->setPhysicsBody(groundPb);
+    layer->addChild(ground);
+    
+    // robo
+    Sprite* robot = Sprite::create("blue_robot.png");
+    robot->setPosition(Point(winSize.width / 5 , winSize.height / 2));
+    PhysicsBody* robotPb = PhysicsBody::createBox(robot->getContentSize());
+    robot->setPhysicsBody(robotPb);
+    robot->setTag(1);
+    layer->addChild(robot);
 
     // return the scene
     return scene;
@@ -27,6 +63,8 @@ bool HelloWorld::init()
         return false;
     }
     
+    
+    /*
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
@@ -70,7 +108,7 @@ bool HelloWorld::init()
     sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
 
     // add the sprite as a child to this layer
-    this->addChild(sprite, 0);
+    this->addChild(sprite, 0);*/
     
     return true;
 }
