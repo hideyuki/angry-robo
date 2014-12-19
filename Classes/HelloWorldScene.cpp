@@ -48,6 +48,13 @@ Scene* HelloWorld::createScene()
     robot->setPhysicsBody(robotPb);
     robot->setTag(1);
     layer->addChild(robot);
+    
+    // touch
+    auto eventDispatcher = Director::getInstance()->getEventDispatcher();
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->onTouchBegan = CC_CALLBACK_2(HelloWorld::onTouchBegan, layer);
+    listener->onTouchEnded = CC_CALLBACK_2(HelloWorld::onTouchEnded, layer);
+    eventDispatcher->addEventListenerWithSceneGraphPriority(listener, layer);
 
     // return the scene
     return scene;
@@ -113,17 +120,29 @@ bool HelloWorld::init()
     return true;
 }
 
-
-void HelloWorld::menuCloseCallback(Ref* pSender)
+Rect HelloWorld::getRect(Node* node)
 {
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-	MessageBox("You pressed the close button. Windows Store Apps do not implement a close button.","Alert");
-    return;
-#endif
-
-    Director::getInstance()->end();
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    exit(0);
-#endif
+    Point point = node->getPosition();
+    int width = node->getContentSize().width;
+    int height = node->getContentSize().height;
+    return Rect(point.x - (width / 2), point.y - (height / 2), width, height);
 }
+
+bool HelloWorld::onTouchBegan(Touch* touch, Event* event)
+{
+    CCLOG("onTouchBegan");
+    Sprite* robot = (Sprite*)this->getChildByTag(1);
+    Rect robotRect = getRect(robot);
+    touchPoint = touch->getLocation();
+    return robotRect.containsPoint(touchPoint);
+}
+
+void HelloWorld::onTouchEnded(Touch* touch, Event* event)
+{
+    CCLOG("onTouchEnded");
+    Sprite* robot = (Sprite*)this->getChildByTag(1);
+    Point endPoint = touch->getLocation();
+    Vect force = Vect(touchPoint.x - endPoint.x, touchPoint.y - endPoint.y) * 4;
+    robot->getPhysicsBody()->applyImpulse(force);
+}
+
